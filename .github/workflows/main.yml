@@ -16,7 +16,6 @@ jobs:
     - name: Build
       uses: okteto/actions/build@v3.1
       with:
-        file: build/Dockerfile
         token: ${{ secrets.OKTETO_TOKEN }}
         tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
     - name: Get Kubeconfig
