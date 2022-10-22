@@ -1,0 +1,41 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Login
+      uses: actions-hub/docker/login@master
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Build
+      uses: okteto/actions/build@v1
+      with:
+        file: build/Dockerfile
+        token: ${{ secrets.OKTETO_TOKEN }}
+        tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
+    - name: Get Kubeconfig
+      uses: okteto/actions/namespace@v1
+      id: url-shortner-mfvitale
+      with:
+        token: ${{ secrets.OKTETO_TOKEN }}
+        namespace: url-shortner-mfvitale
+    - name: Deploy and Wait
+      uses: okteto/actions/deploy@v1
+      env:
+        KUBECONFIG: ${{ steps.namespace.outputs.kubeconfig }}
+      with:
+        namespace: url-shortner-mfvitale
+        manifest: deploy/k8s.yml
+        tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
+        waitOn: deployment/curto
+    - name: Verify
+      uses: srt32/uptime@master
+      with:
+        url-to-hit: "https://curto-mfvitale.cloud.okteto.net"
+        expected-statuses: "200"
