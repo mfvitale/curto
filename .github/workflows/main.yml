@@ -14,18 +14,18 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     - name: Build
-      uses: okteto/actions/build@v3.1
+      uses: okteto/actions/build@latest@2.8.2
       with:
         token: ${{ secrets.OKTETO_TOKEN }}
         tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
     - name: Get Kubeconfig
-      uses: okteto/actions/namespace@v3.1
+      uses: okteto/actions/namespace@latest@2.8.2
       id: url-shortner-mfvitale
       with:
         token: ${{ secrets.OKTETO_TOKEN }}
         namespace: url-shortner-mfvitale
     - name: Deploy and Wait
-      uses: okteto/actions/deploy@v3.1
+      uses: okteto/actions/deploy@latest@2.8.2
       env:
         KUBECONFIG: ${{ steps.namespace.outputs.kubeconfig }}
       with:
