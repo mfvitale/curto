@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curto
+  template:
+    metadata:
+      labels:
+        app: curto
+    spec:
+      containers:
+      - image: mfvitale/curto:latest
+        name: curto
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: curto
+  annotations:
+    dev.okteto.com/auto-ingress: "true"
+spec:
+  type: ClusterIP
+  ports:
+  - name: "curto"
+    port: 8080
+  selector:
+    app: curto
