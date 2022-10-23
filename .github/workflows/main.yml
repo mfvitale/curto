@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: checkout
+      uses: actions/checkout@v1
     - name: Login
       uses: actions-hub/docker/login@master
       env:
@@ -16,6 +18,7 @@ jobs:
     - name: Build
       uses: okteto/actions/build@v3.1
       with:
+        path: build 
         token: ${{ secrets.OKTETO_TOKEN }}
         tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
     - name: Get Kubeconfig
