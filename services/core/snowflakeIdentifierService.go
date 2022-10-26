@@ -51,7 +51,7 @@ func (w *Worker) nextID() (uint64, error) {
 
 	timeStamp := w.getMilliSeconds()
 	if timeStamp < w.LastStamp {
-		return 0, errors.New("time is moving backwards,waiting until")
+		return 0, errors.New("time is moving backwards, waiting until")
 	}
 
 	if w.LastStamp == timeStamp {
