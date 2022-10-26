@@ -74,7 +74,7 @@ func Base62hash(base10Number int64) (string, error) {
 	quotient := base10Number
 	reminder := base10Number
 	reminders := []int64{}
-	
+
 	for ok := true; ok; ok = quotient != 0 {
 
 		reminder = quotient % 62
@@ -84,8 +84,8 @@ func Base62hash(base10Number int64) (string, error) {
 
 	var hashValue strings.Builder
 	for i := len(reminders)-1; i >= 0; i-- {
-        hashValue.WriteString(base10To62Map[reminders[i]])
-    }
+		hashValue.WriteString(base10To62Map[reminders[i]])
+	}
 
 	return hashValue.String(), nil
 }
