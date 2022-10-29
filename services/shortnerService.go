@@ -1,6 +1,7 @@
 package services
 
 import (
+        "os"
 	log "github.com/sirupsen/logrus"
 	"github.com/go-redis/redis/v8"
 	"github.com/mfvitale/curto/repository"
