@@ -4,7 +4,7 @@ import (
     "strings"
 )
 
-var base10To62Map = map[int64]string {
+var base10To62Map = map[uint64]string {
     0:"0",
     1:"1",
     2:"2",
@@ -69,11 +69,11 @@ var base10To62Map = map[int64]string {
     61:"Z",
 }
 
-func Base62hash(base10Number int64) (string, error) {
+func Base62hash(base10Number uint64) (string, error) {
 
     quotient := base10Number
     reminder := base10Number
-    reminders := []int64{}
+    reminders := []uint64{}
 
     for ok := true; ok; ok = quotient != 0 {
 

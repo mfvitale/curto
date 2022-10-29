@@ -30,7 +30,7 @@ type Worker struct {
     Sequence     int64 // ID sequence numbers that have been generated in the current millisecond (accumulated from 0) A maximum of 4096 IDs are generated within 1 millisecond
 }
 
-func NewWorker(workerID, dataCenterID int64) *Worker {
+func NewSnowflakeGenerator(workerID, dataCenterID int64) *Worker {
     return &Worker{
         WorkerID:     workerID,
         LastStamp:    0,

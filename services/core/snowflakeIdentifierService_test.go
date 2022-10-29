@@ -14,7 +14,7 @@ func TestSimpleGeneration(t *testing.T) {
 
     assert := assert.New(t)
 
-    snowflakeService := NewWorker(1, 1)
+    snowflakeService := NewSnowflakeGenerator(1, 1)
 
     id, err := snowflakeService.NextID()
 
@@ -26,7 +26,7 @@ func TestConcurrentGeneration(t *testing.T) {
 
     assert := assert.New(t)
 
-    snowflakeService := NewWorker(1, 1)
+    snowflakeService := NewSnowflakeGenerator(1, 1)
 
     count := 10000
     wg.Add(count)
