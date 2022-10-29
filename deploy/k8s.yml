@@ -19,7 +19,7 @@ spec:
          - name: REDIS_ENDPOINT
            valueFrom:
              secretKeyRef:
-               name: redis-secreta
+               name: redis-secrets
                key: host
 
 ---
