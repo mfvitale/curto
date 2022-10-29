@@ -33,7 +33,9 @@ jobs:
         KUBECONFIG: ${{ steps.namespace.outputs.kubeconfig }}
       with:
         namespace: url-shortner-mfvitale
-        manifest: deploy/k8s.yml
+        manifest: |
+          deploy/k8s.yml
+          deploy/kustomization.yaml
         tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
         waitOn: deployment/curto
     - name: Verify
