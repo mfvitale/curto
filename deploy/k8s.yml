@@ -14,7 +14,13 @@ spec:
     spec:
       containers:
       - image: mfvitale/curto:latest
-        name: curto
+        name: curtocurto
+        env:
+         - name: REDIS_ENDPOINT
+           valueFrom:
+             secretKeyRef:
+               name: redis-secreta
+               key: host
 
 ---
 
