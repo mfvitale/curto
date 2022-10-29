@@ -13,7 +13,7 @@ import (
 var rdb *redis.Client
 
 func init() {
-
+log.Info("Redis endpoint "+config.GetConfig().Redis.Endpoint)
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     config.GetConfig().Redis.Endpoint,
 		Username: config.GetConfig().Redis.Username,
