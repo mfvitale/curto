@@ -33,7 +33,7 @@ jobs:
         KUBECONFIG: ${{ steps.namespace.outputs.kubeconfig }}
       with:
         namespace: url-shortner-mfvitale
-        manifest: |
+        manifests: |
           deploy/k8s.yml
           deploy/kustomization.yaml
         tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
