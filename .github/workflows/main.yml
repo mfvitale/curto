@@ -24,7 +24,7 @@ jobs:
       with:
         file: build/Dockerfile
         token: ${{ secrets.OKTETO_TOKEN }}
-        tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
+        tag: ${{ secrets.DOCKER_USERNAME }}/curto:latest
     - name: Get Kubeconfig
       uses: okteto/actions/namespace@v3.1
       id: url-shortner-mfvitale
