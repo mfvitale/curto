@@ -27,7 +27,7 @@ func init() {
 	})
 
 	redisRepo := repository.NewRedisUrlRepository(rdb)
-	identifierService := core.NewSnowflakeGenerator(int64(os.Getpid()), 10)
+	identifierService := core.NewSnowflakeGenerator(int64(os.Getpid()), int64(config.GetConfig().App.Datacenter))
 
 	shortnerService = services.NewShortnerService(redisRepo, identifierService)
 

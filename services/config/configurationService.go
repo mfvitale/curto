@@ -6,10 +6,12 @@ import (
 )
 
 
+var cfg AppConfig
 type AppConfig struct {
 	App struct {
 		Domain string `yaml:"domain" env:"DOMAIN" env-default:"http://localhost:8080/"`
 		Port string `yaml:"port" env:"PORT" env-default:"8080"`
+		Datacenter int `yaml:"datacenter" env:"DATACENTER" env-default:10`
 	}
 	Redis struct {
 		Endpoint     string `yaml:"endpoint" env:"REDIS_ENDPOINT" env-default:"localhost:6379"`
@@ -18,7 +20,6 @@ type AppConfig struct {
 	}
 }
 
-var cfg AppConfig
 func init() {
 
 	err := cleanenv.ReadConfig("config.yml", &cfg)
