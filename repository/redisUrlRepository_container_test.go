@@ -35,7 +35,10 @@ func setup() {
 
 func shutdown() {
     fmt.Println("Shutting down container")
-    redisContainerInstance.Terminate(ctx)
+    err := redisContainerInstance.Terminate(ctx)
+	if err != nil {
+		fmt.Println("Error during container shutdown")
+	}
 }
 
 func TestMain(m *testing.M) {
@@ -49,7 +52,10 @@ func TestStore(t *testing.T) {
 
     assert := assert.New(t)
 
-    repository.Store("du45g", "http://www.google.it")
+    err := repository.Store("du45g", "http://www.google.it")
+	if err != nil {
+		t.Fail()
+	}
     url, err := repository.Get("du45g")
 
     assert.NoError(err)
@@ -102,7 +108,7 @@ func setupRedis(ctx context.Context) (*redisContainer, error) {
     return &redisContainer{Container: container, URI: endpoint}, nil
 }
 
-func flushRedis(ctx context.Context, client redis.Client) error {
+func flushRedis(ctx context.Context, client redis.Client) {
 
-    return client.FlushAll(ctx).Err()
+	client.FlushAll(ctx)
 }

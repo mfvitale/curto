@@ -72,8 +72,8 @@ var base10To62Map = map[uint64]string {
 func Base62hash(base10Number uint64) (string, error) {
 
     quotient := base10Number
-    reminder := base10Number
-    reminders := []uint64{}
+    var reminder uint64
+	reminders := []uint64{}
 
     for ok := true; ok; ok = quotient != 0 {
 
