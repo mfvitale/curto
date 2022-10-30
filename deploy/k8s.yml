@@ -1,16 +1,3 @@
-apiVersion: kustomize.config.k8s.io/v1beta1 
-kind: Kustomization 
-metadata:
-  name: kustom
-secretGenerator: 
-- name: redis-secrets
-  files: 
-  - redis-secrets.txt
-resources: 
-- k8s.yml
-
----
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,7 +14,7 @@ spec:
     spec:
       containers:
       - image: mfvitale/curto:latest
-        name: curtocurto
+        name: curto
         env:
          - name: REDIS_ENDPOINT
            valueFrom:

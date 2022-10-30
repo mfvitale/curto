@@ -18,7 +18,7 @@ jobs:
     - name: Build
       uses: okteto/actions/build@v3.1
       with:
-        file: build/Dockerfile 
+        file: build/Dockerfile
         token: ${{ secrets.OKTETO_TOKEN }}
         tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
     - name: Get Kubeconfig
@@ -27,15 +27,16 @@ jobs:
       with:
         token: ${{ secrets.OKTETO_TOKEN }}
         namespace: url-shortner-mfvitale
-    - name: Deploy and Wait
-      uses: okteto/actions/deploy@v3.1
-      env:
-        KUBECONFIG: ${{ steps.namespace.outputs.kubeconfig }}
+    - name: "Trigger the pipeline"
+      uses: okteto/pipeline@latest
       with:
-        namespace: url-shortner-mfvitale
-        manifest: deploy/k8s.yml
-        tag: ${{ secrets.DOCKER_USERNAME }}/curto:${{ github.sha }}
-        waitOn: deployment/curto
+        name: pr-${{ github.event.number }}
+        timeout: 8m
+        filename: deploy/okteto-pipeline.yml
+    - name: Sleep for 30 seconds
+      uses: whatnick/wait-action@master
+      with:
+        time: '30s'
     - name: Verify
       uses: srt32/uptime@master
       with:

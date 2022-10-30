@@ -1,0 +1,3 @@
+deploy:
+- envsubst < redis-secrets.txt > redis-secrets.txt
+- kubectl apply -k .
