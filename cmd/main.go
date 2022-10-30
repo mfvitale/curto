@@ -3,17 +3,22 @@ package main
 import (
 	"fmt"
 	"net/http"
-	log "github.com/sirupsen/logrus"
+	"os"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/gorilla/mux"
+	"github.com/mfvitale/curto/repository"
 	"github.com/mfvitale/curto/services"
 	"github.com/mfvitale/curto/services/config"
+	"github.com/mfvitale/curto/services/core"
+	log "github.com/sirupsen/logrus"
 )
 
 var rdb *redis.Client
+var shortnerService services.ShortnerService
 
 func init() {
-log.Info("Redis endpoint "+config.GetConfig().Redis.Endpoint)
+
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     config.GetConfig().Redis.Endpoint,
 		Username: config.GetConfig().Redis.Username,
@@ -21,14 +26,20 @@ log.Info("Redis endpoint "+config.GetConfig().Redis.Endpoint)
 		DB:       0,
 	})
 
+	redisRepo := repository.NewRedisUrlRepository(rdb)
+	identifierService := core.NewSnowflakeGenerator(int64(os.Getpid()), 10)
+
+	shortnerService = services.NewShortnerService(redisRepo, identifierService)
+
 }
 func main() {
 
 	log.Info("Server running on port "+ config.GetConfig().App.Port)
-
-	http.HandleFunc("/", index)
-	http.HandleFunc("/encode", encode)
-	http.ListenAndServe(":"+config.GetConfig().App.Port, nil)
+	r := mux.NewRouter()
+	r .HandleFunc("/", index)
+	r .HandleFunc("/encode", encode)
+	r .HandleFunc("/{hashValue}", decode)
+	http.ListenAndServe(":"+config.GetConfig().App.Port, r)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -39,9 +50,22 @@ func encode(w http.ResponseWriter, r *http.Request) {
 
 	url := r.URL.Query().Get("url")
 
-	shortnerService := services.NewShortnerService(rdb)
 	hashValue := shortnerService.Encode(url)
 
-	fmt.Fprintf(w, hashValue)
-	//http.Redirect(w,r, "https://curto-url-shortner-mfvitale.cloud.okteto.net/"+hashValue, http.StatusSeeOther)
+	fmt.Fprintf(w, config.GetConfig().App.Domain+hashValue)
+}
+
+func decode(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+    hashValue, ok := vars["hashValue"]
+	//TODO move this when hashvalue is not on redis
+    if !ok {
+        fmt.Fprintf(w, "URL not found")
+		w.WriteHeader(http.StatusBadRequest)
+    }
+
+	originalUrl := shortnerService.Decode(hashValue)
+
+	http.Redirect(w,r, originalUrl, http.StatusSeeOther)
 }

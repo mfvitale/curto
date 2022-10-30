@@ -1,26 +1,24 @@
 package services
 
 import (
-    "os"
     log "github.com/sirupsen/logrus"
-    "github.com/go-redis/redis/v8"
     "github.com/mfvitale/curto/repository"
     "github.com/mfvitale/curto/services/core"
 )
 
-type shortnerService struct {
-    redisClient *redis.Client
+type ShortnerService struct {
+    redisRepo repository.UrlRepository
+	identifierService core.IdentifierService
 }
 
-func NewShortnerService(redisClient *redis.Client) shortnerService {
-    return shortnerService{redisClient}
+func NewShortnerService(urlRepository repository.UrlRepository,
+	identifierService core.IdentifierService) ShortnerService {
+    return ShortnerService{urlRepository, identifierService}
 }
 
-func (s *shortnerService) Encode(url string) string {
+func (s *ShortnerService) Encode(url string) string {
 
-    snowflakeGenerator := core.NewSnowflakeGenerator(int64(os.Getpid()), 10)
-
-    id, err := snowflakeGenerator.NextID()
+    id, err := s.identifierService.NextID()
     if err != nil {
         return ""
     }
@@ -30,12 +28,20 @@ func (s *shortnerService) Encode(url string) string {
         return ""
     }
 
-    redisRepo := repository.NewRedisUrlRepository(s.redisClient)
-
-    err = redisRepo.Store(hashValue, url)
+    err = s.redisRepo.Store(hashValue, url)
     if err != nil {
         log.Error(err)
     }
 
     return hashValue
+}
+
+func (s *ShortnerService) Decode(hashValue string) string {
+
+    originalUrl, err := s.redisRepo.Get(hashValue)
+    if err != nil {
+        log.Error(err)
+    }
+
+    return originalUrl
 }

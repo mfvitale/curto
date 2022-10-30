@@ -1,2 +1,3 @@
 app:
+  domain: https://curto-url-shortner-mfvitale.cloud.okteto.net/
   port: 8080

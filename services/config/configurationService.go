@@ -8,6 +8,7 @@ import (
 
 type AppConfig struct {
 	App struct {
+		Domain string `yaml:"domain" env:"DOMAIN" env-default:"http://localhost:8080/"`
 		Port string `yaml:"port" env:"PORT" env-default:"8080"`
 	}
 	Redis struct {
