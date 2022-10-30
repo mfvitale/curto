@@ -29,6 +29,8 @@ jobs:
         namespace: url-shortner-mfvitale
     - name: "Trigger the pipeline"
       uses: okteto/pipeline@latest
+      env:
+        KUBECONFIG: ${{ steps.namespace.outputs.kubeconfig }}
       with:
         name: pr-${{ github.event.number }}
         namespace: url-shortner-mfvitale
