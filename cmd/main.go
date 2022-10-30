@@ -11,14 +11,18 @@ import (
 	"github.com/mfvitale/curto/services"
 	"github.com/mfvitale/curto/services/config"
 	"github.com/mfvitale/curto/services/core"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
+var log = logrus.New()
 var rdb *redis.Client
 var shortnerService services.ShortnerService
 
 func init() {
 
+	log.Out = os.Stdout
+	log.SetLevel(logrus.InfoLevel)
+	
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     config.GetConfig().Redis.Endpoint,
 		Username: config.GetConfig().Redis.Username,
@@ -34,7 +38,7 @@ func init() {
 }
 func main() {
 
-	log.Info("Server running on port "+ config.GetConfig().App.Port)
+	log.Debug("Server running on port "+ config.GetConfig().App.Port)
 	r := mux.NewRouter()
 	r .HandleFunc("/", index)
 	r .HandleFunc("/encode", encode)
