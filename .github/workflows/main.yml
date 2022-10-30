@@ -36,7 +36,7 @@ jobs:
       env:
         KUBECONFIG: ${{ steps.namespace.outputs.kubeconfig }}
       with:
-        name: Deploy
+        name: curto
         namespace: url-shortner-mfvitale
         timeout: 8m
         filename: deploy/okteto-pipeline.yml
