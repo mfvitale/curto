@@ -1,10 +1,11 @@
 name: Pull request
 
-pull_request:
+on:
+  pull_request:
+    types: [opened, reopened]
     branches:
-      - master
+      - 'main'
 
-name: run checks
 jobs:
   lint:
     runs-on: ubuntu-latest
