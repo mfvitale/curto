@@ -10,11 +10,15 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
-    - name: Login
+    - name: Docker login
       uses: actions-hub/docker/login@master
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Okteto login
+      uses: okteto/login@2.8.2
+      with:
+        token: ${{ secrets.OKTETO_TOKEN }}
     - name: Build
       uses: okteto/actions/build@v3.1
       with:
