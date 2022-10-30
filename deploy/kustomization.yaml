@@ -4,5 +4,9 @@ secretGenerator:
 - name: redis-secrets
   envs:
   - redis-secrets.env
+images:
+- name: mfvitale/curto
+  newName: mfvitale/curto
+  newTag: $IMAGE_TAG
 resources:
 - k8s.yml
