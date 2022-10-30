@@ -22,7 +22,7 @@ func init() {
 
 	log.Out = os.Stdout
 	log.SetLevel(logrus.InfoLevel)
-	
+
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     config.GetConfig().Redis.Endpoint,
 		Username: config.GetConfig().Redis.Username,
@@ -43,7 +43,10 @@ func main() {
 	r .HandleFunc("/", index)
 	r .HandleFunc("/encode", encode)
 	r .HandleFunc("/{hashValue}", decode)
-	http.ListenAndServe(":"+config.GetConfig().App.Port, r)
+	err := http.ListenAndServe(":"+config.GetConfig().App.Port, r)
+	if err != nil {
+		panic("Error while starting server")
+	}
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
