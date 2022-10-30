@@ -28,7 +28,7 @@ jobs:
         token: ${{ secrets.OKTETO_TOKEN }}
         namespace: url-shortner-mfvitale
     - name: "Trigger the pipeline"
-      uses: okteto/pipeline@v3.1
+      uses: okteto/pipeline@2.8.2
       env:
         KUBECONFIG: ${{ steps.namespace.outputs.kubeconfig }}
       with:
