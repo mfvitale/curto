@@ -21,6 +21,16 @@ spec:
              secretKeyRef:
                name: redis-secrets
                key: REDIS_ENDPOINT
+         - name: REDIS_USERNAME
+           valueFrom:
+             secretKeyRef:
+               name: redis-secrets
+               key: REDIS_USERNAME
+         - name: REDIS_PASSWORD
+           valueFrom:
+             secretKeyRef:
+               name: redis-secrets
+               key: REDIS_PASSWORD
 
 ---
 
