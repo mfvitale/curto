@@ -38,7 +38,7 @@ func init() {
 }
 func main() {
 
-	log.Debug("Server running on port "+ config.GetConfig().App.Port)
+	log.Debug("Server is running on port "+ config.GetConfig().App.Port)
 	r := mux.NewRouter()
 	r .HandleFunc("/", index)
 	r .HandleFunc("/encode", encode)
