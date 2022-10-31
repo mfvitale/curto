@@ -1,9 +1,10 @@
 package core
 
 import (
-    "errors"
-    "sync"
-    "time"
+	"errors"
+	log "github.com/sirupsen/logrus"
+	"sync"
+	"time"
 )
 
 const (
@@ -31,6 +32,8 @@ type Worker struct {
 }
 
 func NewSnowflakeGenerator(workerID, dataCenterID int64) *Worker {
+	
+	log.Debugf("Snoflake configuration [workerId: %d, datacenterId: %d]", workerID, dataCenterID)
     return &Worker{
         WorkerID:     workerID,
         LastStamp:    0,

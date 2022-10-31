@@ -11,7 +11,8 @@ type AppConfig struct {
 	App struct {
 		Domain string `yaml:"domain" env:"DOMAIN" env-default:"http://localhost:8080/"`
 		Port string `yaml:"port" env:"PORT" env-default:"8080"`
-		Datacenter int `yaml:"datacenter" env:"DATACENTER" env-default:"10"`
+		DatacenterId int `yaml:"datacenterId" env:"DATACENTER_ID" env-default:"10"`
+		PodName string `yaml:"podName" env:"POD_NAME" env-default:"curto-0"`
 	}
 	Redis struct {
 		Endpoint     string `yaml:"endpoint" env:"REDIS_ENDPOINT" env-default:"localhost:6379"`
