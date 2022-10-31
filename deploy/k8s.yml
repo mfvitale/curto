@@ -46,7 +46,7 @@ metadata:
   annotations:
     dev.okteto.com/auto-ingress: "true"
 spec:
-  clusterIP: None
+  type: ClusterIP
   ports:
   - name: "curto"
     port: 8080
