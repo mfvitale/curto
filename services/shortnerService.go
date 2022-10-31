@@ -16,7 +16,7 @@ func NewShortnerService(urlRepository repository.UrlRepository,
     return ShortnerService{urlRepository, identifierService}
 }
 
-func (s *ShortnerService) Encode(url string) string {
+func (s *ShortnerService) Shorten(url string) string {
 
     id, err := s.identifierService.NextID()
     if err != nil {
@@ -36,7 +36,7 @@ func (s *ShortnerService) Encode(url string) string {
     return hashValue
 }
 
-func (s *ShortnerService) Decode(hashValue string) string {
+func (s *ShortnerService) Resolve(hashValue string) string {
 
     originalUrl, err := s.redisRepo.Get(hashValue)
     if err != nil {

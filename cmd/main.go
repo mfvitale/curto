@@ -38,7 +38,7 @@ func init() {
 }
 func main() {
 
-	log.Info("Server is running on port "+ config.GetConfig().App.Port)
+	log.Infof("Server is running on port %s and pod %s", config.GetConfig().App.Port, os.Getenv("POD_NAME"))
 	r := mux.NewRouter()
 	r .HandleFunc("/", index)
 	r .HandleFunc("/encode", encode)
@@ -57,7 +57,7 @@ func encode(w http.ResponseWriter, r *http.Request) {
 
 	url := r.URL.Query().Get("url")
 
-	hashValue := shortnerService.Encode(url)
+	hashValue := shortnerService.Shorten(url)
 
 	fmt.Fprintf(w, config.GetConfig().App.Domain+hashValue)
 }
@@ -72,7 +72,7 @@ func decode(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
     }
 
-	originalUrl := shortnerService.Decode(hashValue)
+	originalUrl := shortnerService.Resolve(hashValue)
 
 	http.Redirect(w,r, originalUrl, http.StatusSeeOther)
 }
