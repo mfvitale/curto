@@ -72,6 +72,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func encode(w http.ResponseWriter, r *http.Request) {
 
+	log.Info("Pod "+ os.Getenv("POD_NAME")) //TODO remove
 	url := r.URL.Query().Get("url")
 
 	hashValue := shortnerService.Shorten(url)
