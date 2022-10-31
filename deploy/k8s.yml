@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: curto
 spec:
@@ -31,6 +31,10 @@ spec:
              secretKeyRef:
                name: redis-secrets
                key: REDIS_PASSWORD
+         - name: POD_NAME
+           valueFrom:
+             fieldRef:
+               fieldPath: metadata.name
 
 ---
 
@@ -41,7 +45,7 @@ metadata:
   annotations:
     dev.okteto.com/auto-ingress: "true"
 spec:
-  type: ClusterIP
+  clusterIP: None
   ports:
   - name: "curto"
     port: 8080
