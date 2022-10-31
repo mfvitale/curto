@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
@@ -31,14 +33,29 @@ func init() {
 	})
 
 	redisRepo := repository.NewRedisUrlRepository(rdb)
-	identifierService := core.NewSnowflakeGenerator(int64(os.Getpid()), int64(config.GetConfig().App.Datacenter))
+
+
+	identifierService := core.NewSnowflakeGenerator(int64(getMachineId()), int64(config.GetConfig().App.DatacenterId))
 
 	shortnerService = services.NewShortnerService(redisRepo, identifierService)
 
 }
+
+func getMachineId() int {
+
+	var compRegEx = regexp.MustCompile(".*-([0-9]*)")
+    match := compRegEx.FindStringSubmatch(config.GetConfig().App.PodName)
+	id, _ := strconv.Atoi(match[1])
+	return id
+}
+
+func Atoi(s string) {
+	panic("unimplemented")
+}
+
 func main() {
 
-	log.Infof("Server is running on port %s and pod %s", config.GetConfig().App.Port, os.Getenv("POD_NAME"))
+	log.Infof("Server is running on port %s", config.GetConfig().App.Port)
 	r := mux.NewRouter()
 	r .HandleFunc("/", index)
 	r .HandleFunc("/encode", encode)
