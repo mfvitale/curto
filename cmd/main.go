@@ -38,7 +38,7 @@ func init() {
 }
 func main() {
 
-	log.Infof("Server is running on port %d and pod %s", config.GetConfig().App.Port, os.Getenv("POD_NAME"))
+	log.Infof("Server is running on port %s and pod %s", config.GetConfig().App.Port, os.Getenv("POD_NAME"))
 	r := mux.NewRouter()
 	r .HandleFunc("/", index)
 	r .HandleFunc("/encode", encode)
