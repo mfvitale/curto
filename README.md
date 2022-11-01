@@ -9,14 +9,16 @@ I developed this service as a side project with the main goal to learn Go lang. 
 
 # Start the application
 
-Before running the application you need to set these envs: REDIS_ENDPOINT, REDIS_USERNAME, REDIS_PASSWORD
+Before running the application you need to set these envs: REDIS_ENDPOINT, REDIS_USERNAME, REDIS_PASSWORD, MACHINE_ID
 
 For example if you want to connect to a local Redis
 ```bash
 export REDIS_ENDPOINT=localhost:6379
 export REDIS_USERNAME="username"
 export REDIS_PASSWORD="password"
+export MACHINE_ID=0
 ```
+In case you deploy the application on K8s you can avoid to set MACHINE_ID since it will be retrived from pos instance number
 
 you can then start application with
 ```bash
@@ -25,7 +27,7 @@ you can then start application with
 ## Shorten an URL
 
 ```bash
-curl -X GET "http://localhost:8080/encode?url=https://www.mfvitale.me"
+curl -X GET "http://localhost:8080/shorten?url=https://www.mfvitale.me"
 ```
 the response will be the shortened URL
 
