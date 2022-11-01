@@ -19,23 +19,26 @@ import (
 var log = logrus.New()
 var rdb *redis.Client
 var shortnerService services.ShortnerService
+var appConfigurationService config.AppConfigurationService
 
 func init() {
 
 	log.Out = os.Stdout
 	log.SetLevel(logrus.InfoLevel)
 
+	appConfigurationService = config.NewAppConfigurationService("config.yml", log)
+
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     config.GetConfig().Redis.Endpoint,
-		Username: config.GetConfig().Redis.Username,
-		Password: config.GetConfig().Redis.Password,
+		Addr:     appConfigurationService.GetConfig().Redis.Endpoint,
+		Username: appConfigurationService.GetConfig().Redis.Username,
+		Password: appConfigurationService.GetConfig().Redis.Password,
 		DB:       0,
 	})
 
 	redisRepo := repository.NewRedisUrlRepository(rdb)
 
 
-	identifierService := core.NewSnowflakeGenerator(int64(getMachineId()), int64(config.GetConfig().App.DatacenterId))
+	identifierService := core.NewSnowflakeGenerator(int64(getMachineId()), int64(appConfigurationService.GetConfig().App.DatacenterId))
 
 	shortnerService = services.NewShortnerService(redisRepo, identifierService)
 
@@ -44,7 +47,7 @@ func init() {
 func getMachineId() int {
 
 	var compRegEx = regexp.MustCompile(".*-([0-9]*)")
-    match := compRegEx.FindStringSubmatch(config.GetConfig().App.PodName)
+    match := compRegEx.FindStringSubmatch(appConfigurationService.GetConfig().App.PodName)
 	id, _ := strconv.Atoi(match[1])
 	return id
 }
@@ -55,12 +58,12 @@ func Atoi(s string) {
 
 func main() {
 
-	log.Infof("Server is running on port %s", config.GetConfig().App.Port)
+	log.Infof("Server[%d] is running on port %s", getMachineId(), appConfigurationService.GetConfig().App.Port)
 	r := mux.NewRouter()
 	r .HandleFunc("/", index)
 	r .HandleFunc("/encode", encode)
 	r .HandleFunc("/{hashValue}", decode)
-	err := http.ListenAndServe(":"+config.GetConfig().App.Port, r)
+	err := http.ListenAndServe(":"+appConfigurationService.GetConfig().App.Port, r)
 	if err != nil {
 		panic("Error while starting server")
 	}
@@ -72,12 +75,11 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func encode(w http.ResponseWriter, r *http.Request) {
 
-	log.Info("Pod "+ os.Getenv("POD_NAME")) //TODO remove
 	url := r.URL.Query().Get("url")
 
 	hashValue := shortnerService.Shorten(url)
 
-	fmt.Fprintf(w, config.GetConfig().App.Domain+hashValue)
+	fmt.Fprintf(w, appConfigurationService.GetConfig().App.Domain+hashValue)
 }
 
 func decode(w http.ResponseWriter, r *http.Request) {

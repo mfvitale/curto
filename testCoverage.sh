@@ -1,0 +1,1 @@
+go tool cover -func cover.out | grep total | awk '{print $3}'
