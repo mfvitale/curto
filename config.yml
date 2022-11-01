@@ -1,4 +1,4 @@
 app:
   datacenterId: 1
-  domain: https://curto-url-shortner-mfvitale.cloud.okteto.net/
+  domain: http://localhost:8080/
   port: 8080
