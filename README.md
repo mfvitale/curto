@@ -59,7 +59,7 @@ So I chose to use:
 * Use Redis to store <shortURL, longURL> mapping
 
 ****
-## TLDR
+## TL;DR
 
 The service has been implemented as an application and not an API, so it also manages the redirection for a short URL.
 
