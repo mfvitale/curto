@@ -4,6 +4,10 @@ secretGenerator:
 - name: redis-secrets
   envs:
   - redis-secrets.env
+configMapGenerator:
+- name: app-config
+  literals:
+  - domain=$APP_DOMAIN
 images:
 - name: mfvitale/curto
   newName: mfvitale/curto

@@ -46,6 +46,10 @@ func init() {
 
 func getMachineId() int {
 
+	if appConfigurationService.GetConfig().App.MachineId != -1 {
+		return appConfigurationService.GetConfig().App.MachineId
+	}
+	
 	var compRegEx = regexp.MustCompile(".*-([0-9]*)")
     match := compRegEx.FindStringSubmatch(appConfigurationService.GetConfig().App.PodName)
 	id, _ := strconv.Atoi(match[1])
@@ -61,7 +65,7 @@ func main() {
 	log.Infof("Server[%d] is running on port %s", getMachineId(), appConfigurationService.GetConfig().App.Port)
 	r := mux.NewRouter()
 	r .HandleFunc("/", index)
-	r .HandleFunc("/encode", encode)
+	r .HandleFunc("/shorten", shorten)
 	r .HandleFunc("/{hashValue}", decode)
 	err := http.ListenAndServe(":"+appConfigurationService.GetConfig().App.Port, r)
 	if err != nil {
@@ -73,7 +77,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello! I'm curto, your URL shortner service!")
 }
 
-func encode(w http.ResponseWriter, r *http.Request) {
+func shorten(w http.ResponseWriter, r *http.Request) {
 
 	url := r.URL.Query().Get("url")
 

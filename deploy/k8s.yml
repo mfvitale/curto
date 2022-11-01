@@ -32,6 +32,11 @@ spec:
              secretKeyRef:
                name: redis-secrets
                key: REDIS_PASSWORD
+         - name: DOMAIN
+           valueFrom:
+             configMapKeyRef:
+               name: app-config
+               key: domain
          - name: POD_NAME
            valueFrom:
              fieldRef:
