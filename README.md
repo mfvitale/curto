@@ -1,5 +1,6 @@
 # Curto: fast url-shortner service
 
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/mfvitale/curto/CI/main)
 [![Coverage Status](https://coveralls.io/repos/github/mfvitale/curto/badge.svg?branch=main)](https://coveralls.io/github/mfvitale/curto?branch=main)
 
 # Why 'curto'?
