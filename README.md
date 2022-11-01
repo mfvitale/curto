@@ -54,7 +54,7 @@ I have deployed the service on [Okteto](https://www.okteto.com/) so you can reac
 The service has been designed to be fast, scalable, and cloud-native.
 
 So I chose to use:
-* [Snowflake algorithm*](https://betterprogramming.pub/implementing-snowflake-algorithm-in-golang-c1098fdc73d0) to have a fast and distributed id generation instead using Database auto-increment feature.
+* [Snowflake algorithm](https://betterprogramming.pub/implementing-snowflake-algorithm-in-golang-c1098fdc73d0) to have a fast and distributed id generation instead using Database auto-increment feature.
 * Base62 conversion to avoid reusing know (but long resulting) hash function (SHA-1, CRC32) that requires managing collision
 * Use Redis to store <shortURL, longURL> mapping
 
