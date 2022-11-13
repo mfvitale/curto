@@ -49,7 +49,7 @@ func getMachineId() int {
 	if appConfigurationService.GetConfig().App.MachineId != -1 {
 		return appConfigurationService.GetConfig().App.MachineId
 	}
-	
+
 	var compRegEx = regexp.MustCompile(".*-([0-9]*)")
     match := compRegEx.FindStringSubmatch(appConfigurationService.GetConfig().App.PodName)
 	id, _ := strconv.Atoi(match[1])
@@ -81,22 +81,26 @@ func shorten(w http.ResponseWriter, r *http.Request) {
 
 	url := r.URL.Query().Get("url")
 
-	hashValue := shortnerService.Shorten(url)
-
+	hashValue, err := shortnerService.Shorten(url)
+	if serr, ok := err.(ShortenOperationError); ok {
+		w.WriteHeader(http.StatusInternalServerError)
+        fmt.Fprintf(w, serr.Error()) //TODO return better error
+		return
+    }
 	fmt.Fprintf(w, appConfigurationService.GetConfig().App.Domain+hashValue)
 }
 
 func decode(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-    hashValue, ok := vars["hashValue"]
-	//TODO move this when hashvalue is not on redis
-    if !ok {
-        fmt.Fprintf(w, "URL not found")
-		w.WriteHeader(http.StatusBadRequest)
-    }
+    hashValue, _ := vars["hashValue"]
 
-	originalUrl := shortnerService.Resolve(hashValue)
+	originalUrl, err := shortnerService.Resolve(hashValue)
+	if serr, ok := err.(repository.ShortURLNotFoundError); ok {
+		w.WriteHeader(http.StatusNotFound)
+        fmt.Fprintf(w, serr.Error())
+		return
+    }
 
 	http.Redirect(w,r, originalUrl, http.StatusSeeOther)
 }

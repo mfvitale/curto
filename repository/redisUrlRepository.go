@@ -1,14 +1,21 @@
 package repository
 
 import (
-    "context"
-    "errors"
-    "github.com/go-redis/redis/v8"
+	"context"
+	"fmt"
+	"github.com/go-redis/redis/v8"
 )
 
 var ctx = context.Background()
 
-const URL_NOT_FOUND_ERR_MSG = "Url not found"
+const URL_NOT_FOUND_ERR_MSG_TEMPLATE = "Short URL %s not found"
+type ShortURLNotFoundError struct {
+	key string
+}
+
+func (e ShortURLNotFoundError) Error() string {
+	return fmt.Sprintf(URL_NOT_FOUND_ERR_MSG_TEMPLATE, e.key)
+}
 
 type redisUrlRepository struct {
     client *redis.Client
@@ -32,7 +39,7 @@ func (repo *redisUrlRepository) Get(key string) (string, error) {
 
     url, err := repo.client.Get(ctx, key).Result()
     if err == redis.Nil {
-        return "", errors.New(URL_NOT_FOUND_ERR_MSG)
+        return "", ShortURLNotFoundError{key}
     } else if err != nil {
         return "", err;
     }
