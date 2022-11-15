@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,7 +33,7 @@ type IdGeneratorMock struct{
 func (m *IdGeneratorMock) NextID() (uint64, error) {
 
 	args := m.Called()
-	return uint64(args.Int(0)), nil
+	return uint64(args.Int(0)), args.Error(1)
 }
 
 func TestUrlShortner(t *testing.T) {
@@ -43,11 +44,11 @@ func TestUrlShortner(t *testing.T) {
 	urlRepositoryMock.On("Store", "2TX", "https://www.mfvitale.me").Return(nil)
 
 	identifierGenerator := new(IdGeneratorMock)
-	identifierGenerator.On("NextID").Return(11157)
+	identifierGenerator.On("NextID").Return(11157, nil)
 
     shortnertService := NewShortnerService(urlRepositoryMock, identifierGenerator)
 
-	hashValue := shortnertService.Shorten("https://www.mfvitale.me")
+	hashValue, _ := shortnertService.Shorten("https://www.mfvitale.me")
 
 	urlRepositoryMock.AssertExpectations(t)
 	urlRepositoryMock.AssertNumberOfCalls(t, "Store", 1)
@@ -69,7 +70,7 @@ func TestUrlResolve(t *testing.T) {
 
     shortnertService := NewShortnerService(urlRepositoryMock, identifierGenerator)
 
-	originalUrl := shortnertService.Resolve("2TX")
+	originalUrl, _ := shortnertService.Resolve("2TX")
 
 	urlRepositoryMock.AssertExpectations(t)
 	urlRepositoryMock.AssertNumberOfCalls(t, "Get", 1)
@@ -88,10 +89,43 @@ func TestResolveNotShortnedUrl(t *testing.T) {
 
     shortnertService := NewShortnerService(urlRepositoryMock, identifierGenerator)
 
-	originalUrl := shortnertService.Resolve("2TX")
+	originalUrl, _ := shortnertService.Resolve("2TX")
 
 	urlRepositoryMock.AssertExpectations(t)
 	urlRepositoryMock.AssertNumberOfCalls(t, "Get", 1)
 
 	assert.Equal("https://www.mfvitale.me", originalUrl)
+}
+
+func TestIdentifierError(t *testing.T) {
+
+    assert := assert.New(t)
+
+	urlRepositoryMock := new(UrlRepositoryMock)
+	identifierGenerator := new(IdGeneratorMock)
+
+	identifierGenerator.On("NextID").Return(0, errors.New("error"))
+
+	shortnertService := NewShortnerService(urlRepositoryMock, identifierGenerator)
+
+	_, err := shortnertService.Shorten("https://www.mfvitale.me")
+
+	assert.ErrorContains(err, "Error shortening url")
+}
+
+func TestRepositoryError(t *testing.T) {
+
+    assert := assert.New(t)
+
+	urlRepositoryMock := new(UrlRepositoryMock)
+	identifierGenerator := new(IdGeneratorMock)
+
+	identifierGenerator.On("NextID").Return(0, nil)
+	urlRepositoryMock.On("Store", "0", "https://www.mfvitale.me").Return(errors.New("connect"))
+
+	shortnertService := NewShortnerService(urlRepositoryMock, identifierGenerator)
+
+	_, err := shortnertService.Shorten("https://www.mfvitale.me")
+
+	assert.ErrorContains(err, "Error shortening url")
 }

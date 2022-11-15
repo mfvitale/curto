@@ -21,6 +21,8 @@ var rdb *redis.Client
 var shortnerService services.ShortnerService
 var appConfigurationService config.AppConfigurationService
 
+const INTERNAL_ERROR_MESSAGE = "Ops! Seems something is not working. Plaese try again"
+
 func init() {
 
 	log.Out = os.Stdout
@@ -37,8 +39,7 @@ func init() {
 
 	redisRepo := repository.NewRedisUrlRepository(rdb)
 
-
-	identifierService := core.NewSnowflakeGenerator(int64(getMachineId()), int64(appConfigurationService.GetConfig().App.DatacenterId))
+	identifierService := core.NewDefaultSnowflakeGenerator(int64(getMachineId()), int64(appConfigurationService.GetConfig().App.DatacenterId))
 
 	shortnerService = services.NewShortnerService(redisRepo, identifierService)
 
@@ -49,9 +50,9 @@ func getMachineId() int {
 	if appConfigurationService.GetConfig().App.MachineId != -1 {
 		return appConfigurationService.GetConfig().App.MachineId
 	}
-	
+
 	var compRegEx = regexp.MustCompile(".*-([0-9]*)")
-    match := compRegEx.FindStringSubmatch(appConfigurationService.GetConfig().App.PodName)
+	match := compRegEx.FindStringSubmatch(appConfigurationService.GetConfig().App.PodName)
 	id, _ := strconv.Atoi(match[1])
 	return id
 }
@@ -64,9 +65,9 @@ func main() {
 
 	log.Infof("Server[%d] is running on port %s", getMachineId(), appConfigurationService.GetConfig().App.Port)
 	r := mux.NewRouter()
-	r .HandleFunc("/", index)
-	r .HandleFunc("/shorten", shorten)
-	r .HandleFunc("/{hashValue}", decode)
+	r.HandleFunc("/", index)
+	r.HandleFunc("/shorten", shorten)
+	r.HandleFunc("/{hashValue}", decode)
 	err := http.ListenAndServe(":"+appConfigurationService.GetConfig().App.Port, r)
 	if err != nil {
 		panic("Error while starting server")
@@ -74,29 +75,35 @@ func main() {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello! I'm curto, your URL shortner service!")
+	contents, _ := os.ReadFile("index.txt")
+
+	fmt.Fprint(w, string(contents))
 }
 
 func shorten(w http.ResponseWriter, r *http.Request) {
 
 	url := r.URL.Query().Get("url")
 
-	hashValue := shortnerService.Shorten(url)
-
+	hashValue, err := shortnerService.Shorten(url)
+	if _, ok := err.(services.ShortenOperationError); ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, INTERNAL_ERROR_MESSAGE)
+		return
+	}
 	fmt.Fprintf(w, appConfigurationService.GetConfig().App.Domain+hashValue)
 }
 
 func decode(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-    hashValue, ok := vars["hashValue"]
-	//TODO move this when hashvalue is not on redis
-    if !ok {
-        fmt.Fprintf(w, "URL not found")
-		w.WriteHeader(http.StatusBadRequest)
-    }
+	hashValue := vars["hashValue"]
 
-	originalUrl := shortnerService.Resolve(hashValue)
+	originalUrl, err := shortnerService.Resolve(hashValue)
+	if serr, ok := err.(repository.ShortURLNotFoundError); ok {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, serr.Error())
+		return
+	}
 
-	http.Redirect(w,r, originalUrl, http.StatusSeeOther)
+	http.Redirect(w, r, originalUrl, http.StatusSeeOther)
 }

@@ -69,7 +69,7 @@ var base10To62Map = map[uint64]string {
     61:"Z",
 }
 
-func Base62hash(base10Number uint64) (string, error) {
+func Base62hash(base10Number uint64) (string) {
 
     quotient := base10Number
     var reminder uint64
@@ -87,5 +87,5 @@ func Base62hash(base10Number uint64) (string, error) {
         hashValue.WriteString(base10To62Map[reminders[i]])
     }
 
-    return hashValue.String(), nil
+    return hashValue.String()
 }
