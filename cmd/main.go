@@ -39,8 +39,7 @@ func init() {
 
 	redisRepo := repository.NewRedisUrlRepository(rdb)
 
-
-	identifierService := core.NewSnowflakeGenerator(int64(getMachineId()), int64(appConfigurationService.GetConfig().App.DatacenterId))
+	identifierService := core.NewDefaultSnowflakeGenerator(int64(getMachineId()), int64(appConfigurationService.GetConfig().App.DatacenterId))
 
 	shortnerService = services.NewShortnerService(redisRepo, identifierService)
 
@@ -53,7 +52,7 @@ func getMachineId() int {
 	}
 
 	var compRegEx = regexp.MustCompile(".*-([0-9]*)")
-    match := compRegEx.FindStringSubmatch(appConfigurationService.GetConfig().App.PodName)
+	match := compRegEx.FindStringSubmatch(appConfigurationService.GetConfig().App.PodName)
 	id, _ := strconv.Atoi(match[1])
 	return id
 }
@@ -66,9 +65,9 @@ func main() {
 
 	log.Infof("Server[%d] is running on port %s", getMachineId(), appConfigurationService.GetConfig().App.Port)
 	r := mux.NewRouter()
-	r .HandleFunc("/", index)
-	r .HandleFunc("/shorten", shorten)
-	r .HandleFunc("/{hashValue}", decode)
+	r.HandleFunc("/", index)
+	r.HandleFunc("/shorten", shorten)
+	r.HandleFunc("/{hashValue}", decode)
 	err := http.ListenAndServe(":"+appConfigurationService.GetConfig().App.Port, r)
 	if err != nil {
 		panic("Error while starting server")
@@ -88,23 +87,23 @@ func shorten(w http.ResponseWriter, r *http.Request) {
 	hashValue, err := shortnerService.Shorten(url)
 	if _, ok := err.(services.ShortenOperationError); ok {
 		w.WriteHeader(http.StatusInternalServerError)
-        fmt.Fprint(w, INTERNAL_ERROR_MESSAGE)
+		fmt.Fprint(w, INTERNAL_ERROR_MESSAGE)
 		return
-    }
+	}
 	fmt.Fprintf(w, appConfigurationService.GetConfig().App.Domain+hashValue)
 }
 
 func decode(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-    hashValue := vars["hashValue"]
+	hashValue := vars["hashValue"]
 
 	originalUrl, err := shortnerService.Resolve(hashValue)
 	if serr, ok := err.(repository.ShortURLNotFoundError); ok {
 		w.WriteHeader(http.StatusNotFound)
-        fmt.Fprint(w, serr.Error())
+		fmt.Fprint(w, serr.Error())
 		return
-    }
+	}
 
-	http.Redirect(w,r, originalUrl, http.StatusSeeOther)
+	http.Redirect(w, r, originalUrl, http.StatusSeeOther)
 }
