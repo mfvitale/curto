@@ -70,7 +70,7 @@ func TestGetNotExistingKey(t *testing.T) {
 
     _, err := repository.Get("not_exist")
 
-    assert.Equal("Url not found", err.Error())
+    assert.Equal("Short URL not_exist not found", err.Error())
 
     flushRedis(ctx, *rdb)
 }

@@ -47,7 +47,7 @@ func TestUrlShortner(t *testing.T) {
 
     shortnertService := NewShortnerService(urlRepositoryMock, identifierGenerator)
 
-	hashValue := shortnertService.Shorten("https://www.mfvitale.me")
+	hashValue, _ := shortnertService.Shorten("https://www.mfvitale.me")
 
 	urlRepositoryMock.AssertExpectations(t)
 	urlRepositoryMock.AssertNumberOfCalls(t, "Store", 1)
@@ -69,7 +69,7 @@ func TestUrlResolve(t *testing.T) {
 
     shortnertService := NewShortnerService(urlRepositoryMock, identifierGenerator)
 
-	originalUrl := shortnertService.Resolve("2TX")
+	originalUrl, _ := shortnertService.Resolve("2TX")
 
 	urlRepositoryMock.AssertExpectations(t)
 	urlRepositoryMock.AssertNumberOfCalls(t, "Get", 1)
@@ -88,7 +88,7 @@ func TestResolveNotShortnedUrl(t *testing.T) {
 
     shortnertService := NewShortnerService(urlRepositoryMock, identifierGenerator)
 
-	originalUrl := shortnertService.Resolve("2TX")
+	originalUrl, _ := shortnertService.Resolve("2TX")
 
 	urlRepositoryMock.AssertExpectations(t)
 	urlRepositoryMock.AssertNumberOfCalls(t, "Get", 1)

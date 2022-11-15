@@ -6,7 +6,6 @@ import (
 	"github.com/mfvitale/curto/repository"
 	"github.com/mfvitale/curto/services/core"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/text/message"
 )
 
 type ShortenOperationError struct {
@@ -32,21 +31,23 @@ func (s *ShortnerService) Shorten(url string) (string, error) {
 
     id, err := s.identifierService.NextID()
     if err != nil {
-        return "", ShortenOperationError{"Error shortening url", err}
+		log.Error(fmt.Sprintf("Error while getting identifier: %s", err))
+        return "", ShortenOperationError{"Error shortening url", err.Error()}
     }
 
     hashValue, err := core.Base62hash(id)
     if err != nil {
-        return "", ShortenOperationError{"Error shortening url", err}
+		log.Error(fmt.Sprintf("Error while creating hash: %s", err))
+        return "", ShortenOperationError{"Error shortening url", err.Error()}
     }
 
     err = s.redisRepo.Store(hashValue, url)
     if err != nil {
         log.Error(fmt.Sprintf("Error while storing on Redis: %s", err))
-		return "", ShortenOperationError{"Error shortening url", err}
+		return "", ShortenOperationError{"Error shortening url", err.Error()}
     }
 
-    return hashValue
+    return hashValue, nil
 }
 
 func (s *ShortnerService) Resolve(hashValue string) (string, error) {

@@ -21,6 +21,8 @@ var rdb *redis.Client
 var shortnerService services.ShortnerService
 var appConfigurationService config.AppConfigurationService
 
+const INTERNAL_ERROR_MESSAGE = "Ops! Seems something is not working. Plaese try again"
+
 func init() {
 
 	log.Out = os.Stdout
@@ -74,7 +76,9 @@ func main() {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello! I'm curto, your URL shortner service!")
+	contents, _ := os.ReadFile("index.txt")
+
+	fmt.Fprint(w, string(contents))
 }
 
 func shorten(w http.ResponseWriter, r *http.Request) {
@@ -82,9 +86,9 @@ func shorten(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")
 
 	hashValue, err := shortnerService.Shorten(url)
-	if serr, ok := err.(ShortenOperationError); ok {
+	if _, ok := err.(services.ShortenOperationError); ok {
 		w.WriteHeader(http.StatusInternalServerError)
-        fmt.Fprintf(w, serr.Error()) //TODO return better error
+        fmt.Fprint(w, INTERNAL_ERROR_MESSAGE)
 		return
     }
 	fmt.Fprintf(w, appConfigurationService.GetConfig().App.Domain+hashValue)
@@ -93,12 +97,12 @@ func shorten(w http.ResponseWriter, r *http.Request) {
 func decode(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-    hashValue, _ := vars["hashValue"]
+    hashValue := vars["hashValue"]
 
 	originalUrl, err := shortnerService.Resolve(hashValue)
 	if serr, ok := err.(repository.ShortURLNotFoundError); ok {
 		w.WriteHeader(http.StatusNotFound)
-        fmt.Fprintf(w, serr.Error())
+        fmt.Fprint(w, serr.Error())
 		return
     }
 
