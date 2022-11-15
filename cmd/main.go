@@ -75,8 +75,10 @@ func main() {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	contents, _ := os.ReadFile("index.txt")
-
+	contents, err := os.ReadFile("index.txt")
+	if err != nil {
+	   log.Errorf("Error while reading index.txt: %s", err.Error())
+	}
 	fmt.Fprint(w, string(contents))
 }
 
