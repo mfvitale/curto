@@ -8,5 +8,6 @@ FROM alpine as prod
 WORKDIR /app
 COPY --from=builder /app/app /app/app
 COPY --from=builder /app/config.yml /app/config.yml
+COPY --from=builder /app/index.txt /app/index.txt
 EXPOSE 8080
 CMD ["./app"]
