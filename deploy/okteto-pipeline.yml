@@ -1,4 +1,0 @@
-deploy:
-- envsubst < redis-secrets.template.env > redis-secrets.env
-- envsubst < kustomization.template.yaml > kustomization.yaml
-- kubectl apply -k .

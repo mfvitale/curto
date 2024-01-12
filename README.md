@@ -19,7 +19,6 @@ export REDIS_USERNAME="username"
 export REDIS_PASSWORD="password"
 export MACHINE_ID=0
 ```
-In case you deploy the application on K8s you can avoid to set MACHINE_ID since it will be retrived from pos instance number
 
 you can then start application with
 ```bash
@@ -47,8 +46,15 @@ the response will be a '303 See Other' HTTP status
 ```bash
 <a href="https://www.mfvitale.me">See Other</a>.
 ```
+### Kubernetes deploy
+If you want to deploy it on k8s you need to create:
+* A secret with name `redis-secrets` and add `REDIS_ENDPOINT`. Optionally you can add `REDIS_USERNAME` and `REDIS_PASSWORD`
+* A config map with name `app-config` where you can specify the `domain` with your custom domain.
+* Build the image locally naming it `mfvitale/curto:latest` 
+
+You can just run `kubectl apply -f .deploy/`
 # Try it
-I have deployed the service on [Okteto](https://www.okteto.com/) so you can reach the service [here](https://curto-url-shortner-mfvitale.cloud.okteto.net/)
+I have deployed the service on [Render](https://render.com/) so you can reach the service [here](https://curto.onrender.com/)
 # Design choices
 
 The service has been designed to be fast, scalable, and cloud-native.
