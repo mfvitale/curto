@@ -46,6 +46,49 @@ the response will be a '303 See Other' HTTP status
 ```bash
 <a href="https://www.mfvitale.me">See Other</a>.
 ```
+
+## Analytics
+
+The service tracks clicks on shortened URLs and provides analytics endpoints for frontend dashboards.
+
+### Get analytics summary
+
+```bash
+curl -X GET "http://localhost:8080/analytics/eBIGnfbLW"
+```
+
+Response:
+```json
+{
+  "short_url": "eBIGnfbLW",
+  "total_clicks": 42
+}
+```
+
+### Get detailed click history
+
+```bash
+curl -X GET "http://localhost:8080/analytics/eBIGnfbLW/clicks?limit=10"
+```
+
+Response:
+```json
+{
+  "short_url": "eBIGnfbLW",
+  "total_clicks": 42,
+  "clicks": [
+    {
+      "timestamp": "2024-01-15T10:30:00Z",
+      "ip": "192.168.1.1",
+      "user_agent": "Mozilla/5.0...",
+      "referer": "https://google.com"
+    }
+  ]
+}
+```
+
+*Note: The `limit` parameter controls the number of click events returned (default: 100, max: 1000)*
+
 ### Kubernetes deploy
 If you want to deploy it on k8s you need to create:
 * A secret with name `redis-secrets` and add `REDIS_ENDPOINT`. Optionally you can add `REDIS_USERNAME` and `REDIS_PASSWORD`

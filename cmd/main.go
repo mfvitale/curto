@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
@@ -19,6 +22,7 @@ import (
 var log = logrus.New()
 var rdb *redis.Client
 var shortnerService services.ShortnerService
+var analyticsService *services.AnalyticsService
 var appConfigurationService config.AppConfigurationService
 
 const INTERNAL_ERROR_MESSAGE = "Ops! Seems something is not working. Plaese try again"
@@ -38,10 +42,12 @@ func init() {
 	})
 
 	redisRepo := repository.NewRedisUrlRepository(rdb)
+	analyticsRepo := repository.NewRedisAnalyticsRepository(rdb)
 
 	identifierService := core.NewDefaultSnowflakeGenerator(int64(getMachineId()), int64(appConfigurationService.GetConfig().App.DatacenterId))
 
 	shortnerService = services.NewShortnerService(redisRepo, identifierService)
+	analyticsService = services.NewAnalyticsService(analyticsRepo)
 
 }
 
@@ -67,6 +73,8 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", index)
 	r.HandleFunc("/shorten", shorten)
+	r.HandleFunc("/analytics/{hashValue}", getAnalytics).Methods("GET")
+	r.HandleFunc("/analytics/{hashValue}/clicks", getClickHistory).Methods("GET")
 	r.HandleFunc("/{hashValue}", decode)
 	err := http.ListenAndServe(":"+appConfigurationService.GetConfig().App.Port, r)
 	if err != nil {
@@ -107,5 +115,89 @@ func decode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Record click analytics asynchronously
+	go func() {
+		ip := getClientIP(r)
+		userAgent := r.UserAgent()
+		referer := r.Referer()
+		if err := analyticsService.RecordClick(hashValue, ip, userAgent, referer); err != nil {
+			log.Errorf("Error recording click analytics: %s", err.Error())
+		}
+	}()
+
 	http.Redirect(w, r, originalUrl, http.StatusSeeOther)
+}
+
+// getClientIP extracts the client IP address from the request
+func getClientIP(r *http.Request) string {
+	// Check X-Forwarded-For header first (for proxies/load balancers)
+	forwarded := r.Header.Get("X-Forwarded-For")
+	if forwarded != "" {
+		// Take the first IP in the list
+		ips := strings.Split(forwarded, ",")
+		return strings.TrimSpace(ips[0])
+	}
+
+	// Check X-Real-IP header
+	realIP := r.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+
+	// Fall back to RemoteAddr
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return ip
+}
+
+// getAnalytics returns analytics summary for a short URL
+func getAnalytics(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	hashValue := vars["hashValue"]
+
+	analytics, err := analyticsService.GetAnalytics(hashValue)
+	if err != nil {
+		log.Errorf("Error getting analytics: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, INTERNAL_ERROR_MESSAGE)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(analytics); err != nil {
+		log.Errorf("Error encoding analytics response: %s", err.Error())
+	}
+}
+
+// getClickHistory returns detailed click history for a short URL
+func getClickHistory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	hashValue := vars["hashValue"]
+
+	// Parse limit from query params, default to 100, max 1000
+	limitStr := r.URL.Query().Get("limit")
+	limit := int64(100)
+	if limitStr != "" {
+		if parsedLimit, err := strconv.ParseInt(limitStr, 10, 64); err == nil && parsedLimit > 0 {
+			limit = parsedLimit
+			if limit > 1000 {
+				limit = 1000
+			}
+		}
+	}
+
+	analytics, err := analyticsService.GetAnalyticsWithHistory(hashValue, limit)
+	if err != nil {
+		log.Errorf("Error getting click history: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, INTERNAL_ERROR_MESSAGE)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(analytics); err != nil {
+		log.Errorf("Error encoding click history response: %s", err.Error())
+	}
 }
