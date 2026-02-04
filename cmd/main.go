@@ -176,12 +176,15 @@ func getClickHistory(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	hashValue := vars["hashValue"]
 
-	// Parse limit from query params, default to 100
+	// Parse limit from query params, default to 100, max 1000
 	limitStr := r.URL.Query().Get("limit")
 	limit := int64(100)
 	if limitStr != "" {
 		if parsedLimit, err := strconv.ParseInt(limitStr, 10, 64); err == nil && parsedLimit > 0 {
 			limit = parsedLimit
+			if limit > 1000 {
+				limit = 1000
+			}
 		}
 	}
 
